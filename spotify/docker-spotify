@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Start a docker container running Spotify
 # Based on syncomm's
 # Usage:
@@ -15,19 +17,17 @@ XCOOKIE=`xauth list | grep unix | cut -f2 -d"/" | tr -cd '\11\12\15\40-\176' | s
 
 if [ ! -e /tmp/.spotify-pulse-socket ];
 then
-    echo -e "${lpurp}Adding Pulseaudio socket at /tmp/.spotify-pulse-socket${NC}" 
+    echo -e "${purp}Adding Pulseaudio socket at /tmp/.spotify-pulse-socket${NC}" 
     SPOTIFYSOCKET=`pactl load-module module-native-protocol-unix auth-anonymous=1 socket=/tmp/.spotify-pulse-socket`
 fi
 
 echo -e "${purp}Starting Spotify container${NC}"
 echo docker run --rm --name spotify \
-     	    	-e XCOOKIE="$XCOOKIE" \
-		-e DISPLAY="unix$DISPLAY" \
+     	    	-e XCOOKIE=\'$XCOOKIE\' \
+		-e DISPLAY=\'unix$DISPLAY\' \
 		-v /tmp/.X11-unix/:/tmp/.X11-unix/ \
-		-v /tmp/.spotify-pulse-socket \
-		-v $HOME/.spotify/cache:/home/spotify/spotify
-		-v $HOME/.spotify/config:/home/spotify/spotify
-		spotify
+		-v /tmp/.spotify-pulse-socket:/tmp/.spotify-pulse-socket \
+		spotify | bash
 
 echo -e "${purp}Removing Pulseaudio socket at /tmp/.spotify-pulse-socket${NC}" 
 pactl unload-module $SPOTIFYSOCKET
