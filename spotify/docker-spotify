@@ -21,12 +21,22 @@ then
     SPOTIFYSOCKET=`pactl load-module module-native-protocol-unix auth-anonymous=1 socket=/tmp/.spotify-pulse-socket`
 fi
 
+DATA_CONTAINER=$USER-spotify-data
+RUNNING=$(docker inspect --format="{{ .State.Running }}" $DATA_CONTAINER 2> /dev/null)
+
+if [ $? -eq 1 ]; then
+    echo -e "${purp}Creating data container $DATA_CONTAINER${NC}"
+    CONTAINER_ID=$(docker create -v /home/spotify --name $DATA_CONTAINER spotify)
+    echo -e "${purp}Container $DATA_CONTAINER created with id $CONTAINER_ID${NC}"
+fi
+
 echo -e "${purp}Starting Spotify container${NC}"
 echo docker run --rm --name spotify \
      	    	-e XCOOKIE=\'$XCOOKIE\' \
 		-e DISPLAY=\'unix$DISPLAY\' \
 		-v /tmp/.X11-unix/:/tmp/.X11-unix/ \
 		-v /tmp/.spotify-pulse-socket:/tmp/.spotify-pulse-socket \
+		--volumes-from $DATA_CONTAINER \
 		spotify | bash
 
 echo -e "${purp}Removing Pulseaudio socket at /tmp/.spotify-pulse-socket${NC}" 
